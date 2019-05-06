@@ -72,7 +72,7 @@ ext {
 spotless {
     kotlin {
         ktlint().userData(['android'        : 'true', 'color': 'tr/gradue',
-                           'max_line_length': '250', 'reporter': 'checkstyle'])
+                           'max_line_length': '120', 'reporter': 'checkstyle'])
         target 'app/src/**/*.kt', 'onlineapi/src/**/*.kt'
     }
 }

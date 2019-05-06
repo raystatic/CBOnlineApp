@@ -5,7 +5,6 @@ import com.codingblocks.onlineapi.api.OnlineRestApi
 import com.codingblocks.onlineapi.api.OnlineVideosApi
 import com.codingblocks.onlineapi.models.Announcement
 import com.codingblocks.onlineapi.models.CarouselCards
-import com.codingblocks.onlineapi.models.Certificate
 import com.codingblocks.onlineapi.models.Choice
 import com.codingblocks.onlineapi.models.Comment
 import com.codingblocks.onlineapi.models.ContentCodeChallenge
@@ -38,23 +37,23 @@ import com.codingblocks.onlineapi.models.RunAttemptsModel
 import com.codingblocks.onlineapi.models.Sections
 import com.codingblocks.onlineapi.models.Tags
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.jasminb.jsonapi.RelationshipResolver
 import com.github.jasminb.jsonapi.ResourceConverter
 import com.github.jasminb.jsonapi.retrofit.JSONAPIConverterFactory
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.jackson.JacksonConverterFactory
 
 object Clients {
-    private val om = ObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     var authJwt = ""
+    private val objectMapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     private val onlineApiResourceConverter = ResourceConverter(
-        om,
-        Instructor::class.java,
+        objectMapper, Instructor::class.java,
         Course::class.java,
         Sections::class.java,
         Contents::class.java,
@@ -86,7 +85,6 @@ object Clients {
         Notes::class.java,
         Rating::class.java,
         Tags::class.java,
-        Certificate::class.java,
         CarouselCards::class.java
     )
     private val relationshipResolver = RelationshipResolver {
@@ -113,11 +111,13 @@ object Clients {
         .addInterceptor { chain ->
             chain.proceed(chain.request().newBuilder().addHeader("Authorization", "JWT $authJwt").build())
         }
+        .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
         .build()
     private val onlineV2JsonRetrofit = Retrofit.Builder()
         .client(ClientInterceptor)
         .baseUrl("https://api-online.cb.lk/api/v2/")
         .addConverterFactory(JSONAPIConverterFactory(onlineApiResourceConverter))
+        .addConverterFactory(JacksonConverterFactory.create(objectMapper))
         .addCallAdapterFactory(CoroutineCallAdapterFactory())
         .build()
     val onlineV2JsonApi: OnlineJsonApi

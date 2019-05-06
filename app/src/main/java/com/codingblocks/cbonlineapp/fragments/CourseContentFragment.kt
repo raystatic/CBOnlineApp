@@ -5,22 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.codingblocks.cbonlineapp.DownloadStarter
-import com.codingblocks.cbonlineapp.R
 import com.codingblocks.cbonlineapp.adapters.SectionDetailsAdapter
 import com.codingblocks.cbonlineapp.database.AppDatabase
-import com.codingblocks.cbonlineapp.database.models.CourseRun
 import com.codingblocks.cbonlineapp.database.models.CourseSection
-import com.codingblocks.cbonlineapp.services.DownloadService
 import com.codingblocks.cbonlineapp.extensions.getPrefs
+import com.codingblocks.cbonlineapp.extensions.observeOnce
+import com.codingblocks.cbonlineapp.extensions.observer
+import com.codingblocks.cbonlineapp.services.DownloadService
+import com.codingblocks.cbonlineapp.ui.CourseContentUi
 import com.google.firebase.analytics.FirebaseAnalytics
-import kotlinx.android.synthetic.main.fragment_course_content.view.rvExpendableView
-import kotlinx.android.synthetic.main.fragment_course_content.view.sectionProgressBar
-import kotlinx.android.synthetic.main.fragment_course_content.view.swiperefresh
+import org.jetbrains.anko.AnkoContext
 import org.jetbrains.anko.AnkoLogger
+import org.jetbrains.anko.support.v4.ctx
 import org.jetbrains.anko.support.v4.startService
 
 private const val ARG_ATTEMPT_ID = "attempt_id"
@@ -28,11 +27,25 @@ private const val ARG_ATTEMPT_ID = "attempt_id"
 class CourseContentFragment : Fragment(), AnkoLogger, DownloadStarter {
     lateinit var attemptId: String
     private lateinit var firebaseAnalytics: FirebaseAnalytics
+    val ui = CourseContentUi<Fragment>()
     private val database: AppDatabase by lazy {
         AppDatabase.getInstance(context!!)
     }
     private val courseDao by lazy {
         database.courseRunDao()
+    }
+    private val sectionDao by lazy {
+        database.sectionDao()
+    }
+
+    companion object {
+        @JvmStatic
+        fun newInstance(param1: String) =
+            CourseContentFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_ATTEMPT_ID, param1)
+                }
+            }
     }
 
     override fun startDownload(url: String, id: String, lectureContentId: String, title: String, attemptId: String, contentId: String) {
@@ -47,46 +60,37 @@ class CourseContentFragment : Fragment(), AnkoLogger, DownloadStarter {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_course_content, container, false)
-        view.swiperefresh.setOnRefreshListener {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?):
+        View? = ui.createView(AnkoContext.create(ctx, this))
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        ui.swipeRefreshLayout.setOnRefreshListener {
             try {
                 (activity as SwipeRefreshLayout.OnRefreshListener).onRefresh()
             } catch (cce: ClassCastException) {
             }
         }
+
         firebaseAnalytics = FirebaseAnalytics.getInstance(context!!)
-        val sectionDao = database.sectionDao()
         val sectionsList = ArrayList<CourseSection>()
         val sectionAdapter = SectionDetailsAdapter(sectionsList, activity!!, this)
-        view.rvExpendableView.layoutManager = LinearLayoutManager(context)
-        view.rvExpendableView.adapter = sectionAdapter
-        view.sectionProgressBar.show()
-        sectionDao.getCourseSection(attemptId).observe(this, Observer<List<CourseSection>> {
+
+        ui.rvSection.layoutManager = LinearLayoutManager(context)
+        ui.rvSection.adapter = sectionAdapter
+        ui.sectionProgressBar.show()
+        sectionDao.getCourseSection(attemptId).observer(this) {
             if (it.isNotEmpty()) {
-                view.sectionProgressBar.hide()
+                ui.sectionProgressBar.hide()
             }
-            courseDao.getRunByAtemptId(attemptId).observe(this, Observer<CourseRun> { courseRun ->
+            courseDao.getRunByAtemptId(attemptId).observeOnce { courseRun ->
                 sectionAdapter.setData(it as ArrayList<CourseSection>, courseRun.premium, courseRun.crStart)
-            })
-            if (view.swiperefresh.isRefreshing) {
-                view.swiperefresh.isRefreshing = false
             }
-        })
-
-        return view
-    }
-
-    companion object {
-        @JvmStatic
-        fun newInstance(param1: String) =
-            CourseContentFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_ATTEMPT_ID, param1)
-                }
+            if (ui.swipeRefreshLayout.isRefreshing) {
+                ui.swipeRefreshLayout.isRefreshing = false
             }
+        }
     }
 
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {

@@ -110,12 +110,10 @@ class HomeFragment : Fragment(), AnkoLogger {
 
     private fun fetchCards() {
         Clients.onlineV2JsonApi.carouselCards.enqueue(retrofitCallback { _, response ->
-            response?.body().let {
-                val carouselSliderAdapter = CarouselSliderAdapter(it!!, context!!)
+            response?.body()?.let {
+                val carouselSliderAdapter = CarouselSliderAdapter(it, context!!)
                 ui.viewPager.adapter = carouselSliderAdapter
                 ui.viewPager.currentItem = 0
-//                if (categories.size > 1)
-//                    view.tabDots.setupWithViewPager(view.imageViewPager, true)
                 ui.viewPager.setPageTransformer(true, ZoomOutPageTransformer())
                 val handler = Handler()
                 val update = Runnable {
