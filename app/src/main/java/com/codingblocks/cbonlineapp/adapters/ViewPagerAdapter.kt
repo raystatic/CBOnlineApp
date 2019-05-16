@@ -20,7 +20,7 @@ import kotlinx.android.synthetic.main.quizlayout.view.*
 import org.jetbrains.anko.AnkoLogger
 
 
-class ViewPagerAdapter(var mContext: Context, var quizId: String, var qaId: String, var attemptId: String, private var questionList: HashMap<Int, String>, submission: List<QuizSubmission>?, var result: QuizResult?) : PagerAdapter(), AnkoLogger {
+class ViewPagerAdapter(private val selectListener: ChoiceSelected,var mContext: Context, var quizId: String, var qaId: String, var attemptId: String, private var questionList: HashMap<Int, String>, submission: List<QuizSubmission>?, var result: QuizResult?) : PagerAdapter(), AnkoLogger {
     private lateinit var choiceDataAdapter: QuizChoiceAdapter
     var submissionList: ArrayList<QuizSubmission> = submission as ArrayList<QuizSubmission>
 
@@ -57,6 +57,7 @@ class ViewPagerAdapter(var mContext: Context, var quizId: String, var qaId: Stri
                         if (result == null) {
                             //marking correct option in the list
                             it.choices!![position].marked = true
+                            selectListener.markedPosition()
 
                             //unmarking rest of the options
                             it.choices!!.forEachIndexed { index, choice ->
@@ -137,4 +138,9 @@ class ViewPagerAdapter(var mContext: Context, var quizId: String, var qaId: Stri
     override fun getCount(): Int {
         return questionList.size
     }
+
+    interface ChoiceSelected{
+        fun markedPosition()
+    }
+
 }

@@ -52,11 +52,13 @@ class QuizChoiceAdapter(
                     // If this is correct
                     itemView.markedImgView.background = context.getDrawable(R.drawable.ic_correct)
                     itemView.optionTitle.textColor = context.resources.getColor(R.color.green)
+                    //choiceListener.choiceSelected(true)
                 } else if (choice.marked) {
                     // If this is not correct, but has been marked
                     itemView.markedImgView.background = context.getDrawable(R.drawable.ic_incorrect)
                     itemView.optionTitle.textColor =
                         context.resources.getColor(R.color.colorPrimaryDark)
+                   // choiceListener.choiceSelected(false)
                 }
             } ?: run {
                 if (choice.marked) {
@@ -78,4 +80,9 @@ class QuizChoiceAdapter(
             }
         }
     }
+
+    interface ChoiceSelectedListener{
+        fun choiceSelected(ans: Boolean)
+    }
+
 }
