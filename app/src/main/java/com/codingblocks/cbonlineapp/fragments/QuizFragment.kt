@@ -24,9 +24,6 @@ import com.codingblocks.cbonlineapp.util.QUIZ_QNA
 import com.codingblocks.cbonlineapp.util.RUN_ATTEMPT_ID
 import com.codingblocks.onlineapi.Clients
 import com.codingblocks.onlineapi.models.QuizSubmission
-import com.codingblocks.onlineapi.models.Question
-import com.codingblocks.onlineapi.models.QuizResult
-import com.codingblocks.onlineapi.models.Question
 import com.codingblocks.onlineapi.models.QuizResult
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -89,7 +86,7 @@ class QuizFragment : Fragment(), AnkoLogger, ViewPager.OnPageChangeListener, Vie
                                 quizViewPager.currentItem = 0
                                 quizViewPager.setOnPageChangeListener(this)
                                 quizViewPager.offscreenPageLimit = 3
-                                it.result?.let { it1 -> setUpQuestionBottomSheet(it1) }
+                                it?.result?.let { it1 -> setUpQuestionBottomSheet(it1) }
                             }
                         })
 
