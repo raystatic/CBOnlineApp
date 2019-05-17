@@ -26,6 +26,8 @@ import com.codingblocks.onlineapi.Clients
 import com.codingblocks.onlineapi.models.QuizSubmission
 import com.codingblocks.onlineapi.models.Question
 import com.codingblocks.onlineapi.models.QuizResult
+import com.codingblocks.onlineapi.models.Question
+import com.codingblocks.onlineapi.models.QuizResult
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.android.synthetic.main.bottom_question_sheet.*
