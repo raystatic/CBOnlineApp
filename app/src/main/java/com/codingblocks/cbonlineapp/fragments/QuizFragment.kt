@@ -23,6 +23,7 @@ import com.codingblocks.cbonlineapp.util.QUIZ_QNA
 import com.codingblocks.cbonlineapp.util.RUN_ATTEMPT_ID
 import com.codingblocks.onlineapi.Clients
 import com.codingblocks.onlineapi.models.Question
+import com.codingblocks.onlineapi.models.QuizResult
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.android.synthetic.main.bottom_question_sheet.*
@@ -73,7 +74,6 @@ class QuizFragment : Fragment(), AnkoLogger, ViewPager.OnPageChangeListener, Vie
 
         Clients.onlineV2JsonApi.getQuizById(quizId).enqueue(retrofitCallback { _, response ->
             response?.body()?.let { quiz ->
-                quiz.questions?.let { setUpQuestionBottomSheet(it) }
                 quiz.questions?.forEachIndexed { index, question ->
                     questionList[index] = question.id ?: ""
                     if (index == quiz.questions!!.size - 1) {
@@ -84,6 +84,7 @@ class QuizFragment : Fragment(), AnkoLogger, ViewPager.OnPageChangeListener, Vie
                                 quizViewPager.currentItem = 0
                                 quizViewPager.setOnPageChangeListener(this)
                                 quizViewPager.offscreenPageLimit = 3
+                                it.result?.let { it1 -> setUpQuestionBottomSheet(it1) }
                             }
                         })
 
@@ -104,7 +105,7 @@ class QuizFragment : Fragment(), AnkoLogger, ViewPager.OnPageChangeListener, Vie
         quizViewPager.currentItem = pos
     }
 
-    private fun setUpQuestionBottomSheet(questions: ArrayList<Question>) {
+    private fun setUpQuestionBottomSheet(questions: QuizResult) {
 
         choiceNumberAdapter = ChoicesAdapter(this)
         numbersRv.layoutManager = GridLayoutManager(context,3)

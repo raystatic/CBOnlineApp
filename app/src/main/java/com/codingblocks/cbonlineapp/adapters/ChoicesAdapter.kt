@@ -7,15 +7,16 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.codingblocks.cbonlineapp.R
 import com.codingblocks.onlineapi.models.Question
+import com.codingblocks.onlineapi.models.QuizResult
 import kotlinx.android.synthetic.main.choice_numbers_layout.view.*
 
 class ChoicesAdapter(private val listener:ChoiceClickListener) : RecyclerView.Adapter<ChoicesAdapter.MyViewHolder>() {
 
     lateinit var context : Context
     private var numbers = ArrayList<Int>()
-    private var question = ArrayList<Question>()
+    private var question : QuizResult? = null
 
-    fun setdata(question: ArrayList<Question>, numbers:ArrayList<Int>){
+    fun setdata(question: QuizResult, numbers:ArrayList<Int>){
         this.numbers = numbers
         this.question = question
         notifyDataSetChanged()
@@ -27,7 +28,7 @@ class ChoicesAdapter(private val listener:ChoiceClickListener) : RecyclerView.Ad
     }
 
     override fun getItemCount(): Int {
-        return question.size
+        return question?.questions?.size?:0
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
